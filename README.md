@@ -21,5 +21,6 @@ Clone the repository and mark the scripts as executable
 
 ##
 Features
-- **./devopsfetch.sh -p or --port : displays all active ports 
+- **./devopsfetch.sh -p** or --port : displays all active ports 
+- 
 
