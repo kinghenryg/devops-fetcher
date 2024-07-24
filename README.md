@@ -18,5 +18,8 @@ Clone the repository and mark the scripts as executable
     chmod +x devopsfetch.sh
     chmod +x install.sh
  ```
- 
+
+##
+Features
+ - ** ./devopsfetch.sh -p or --port : displays all active ports 
 
