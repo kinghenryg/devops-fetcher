@@ -1,7 +1,6 @@
 #!/bin/bash
 
 # Prettytable code
-
 _prettytable_char_top_left="┌"
 _prettytable_char_horizontal="─"
 _prettytable_char_vertical="│"
@@ -17,7 +16,7 @@ _prettytable_char_vertical_horizontal="┼"
 _prettytable_color_none="0"
 
 function _prettytable_prettify_lines() {
-    cat - | sed -e "s@^@${_prettytable_char_vertical}@;s@\$@	@;s@	@	${_prettytable_char_vertical}@g"
+    cat - | sed -e "s@^@${_prettytable_char_vertical} @;s@\$@ ${_prettytable_char_vertical}@"
 }
 
 function _prettytable_fix_border_lines() {
@@ -36,36 +35,35 @@ function prettytable() {
     local cols="${1}"
     local color="${2:-none}"
     local input="$(cat -)"
-    local header="$(echo -e "${input}"|head -n1)"
-    local body="$(echo -e "${input}"|tail -n+2)"
+    local header="$(echo -e "${input}" | head -n1)"
+    local body="$(echo -e "${input}" | tail -n+2)"
     {
         # Top border
         echo -n "${_prettytable_char_top_left}"
         for i in $(seq 2 ${cols}); do
-            echo -ne "\t${_prettytable_char_vertical_horizontal_top}"
+            echo -ne "${_prettytable_char_horizontal}┬"
         done
-        echo -e "\t${_prettytable_char_top_right}"
+        echo -e "${_prettytable_char_horizontal}${_prettytable_char_top_right}"
 
         echo -e "${header}" | _prettytable_prettify_lines
 
         # Header/Body delimiter
         echo -n "${_prettytable_char_vertical_horizontal_left}"
         for i in $(seq 2 ${cols}); do
-            echo -ne "\t${_prettytable_char_vertical_horizontal}"
+            echo -ne "${_prettytable_char_vertical_horizontal}┼"
         done
-        echo -e "\t${_prettytable_char_vertical_horizontal_right}"
+        echo -e "${_prettytable_char_vertical_horizontal_right}"
 
         echo -e "${body}" | _prettytable_prettify_lines
 
         # Bottom border
         echo -n "${_prettytable_char_bottom_left}"
         for i in $(seq 2 ${cols}); do
-            echo -ne "\t${_prettytable_char_vertical_horizontal_bottom}"
+            echo -ne "${_prettytable_char_vertical_horizontal_bottom}┴"
         done
-        echo -e "\t${_prettytable_char_bottom_right}"
+        echo -e "${_prettytable_char_vertical_horizontal_bottom}${_prettytable_char_bottom_right}"
     } | column -t -s $'\t' | _prettytable_fix_border_lines | _prettytable_colorize_lines "${color}" "2"
 }
-
 
 LOG_FILE="/var/log/devopsfetch.log"
 
@@ -79,44 +77,62 @@ log() {
 }
 
 display_active_ports() {
-    echo -e "Proto\tLocal Address\tForeign Address\tState\tPID/Program name" | cat - <(sudo netstat -tulpn | grep LISTEN | awk '{print $1"\t"$4"\t"$5"\t"$6"\t"$7}') | prettytable 5 cyan
+    echo -e "Proto\tLocal Address\tForeign Address\tState\tPID/Program name" \
+    | cat - <(sudo netstat -tulpn | grep LISTEN | awk '{print $1"\t"$4"\t"$5"\t"$6"\t"$7}') \
+    | prettytable 5 cyan
 }
 
 get_port_info() {
-    echo -e "State\tRecv-Q\tSend-Q\tLocal Address:Port\tPeer Address:Port" | cat - <(ss -tuln sport = ":$1" | tail -n +2 | awk '{print $1"\t"$2"\t"$3"\t"$4"\t"$5}') | prettytable 5 green
+    echo -e "State\tRecv-Q\tSend-Q\tLocal Address:Port\tPeer Address:Port" \
+    | cat - <(ss -tuln sport = ":$1" | tail -n +2 | awk '{print $1"\t"$2"\t"$3"\t"$4"\t"$5}') \
+    | prettytable 5 green
 }
 
 list_docker_images() {
-    echo -e "REPOSITORY\tTAG\tIMAGE ID\tCREATED\tSIZE" | cat - <(docker images | tail -n +2) | prettytable 5 blue
+    echo -e "REPOSITORY\tTAG\tIMAGE ID\tCREATED\tSIZE" \
+    | cat - <(docker images | tail -n +2) \
+    | prettytable 5 blue
 }
 
 list_docker_containers() {
-    echo -e "CONTAINER ID\tIMAGE\tCOMMAND\tCREATED\tSTATUS\tPORTS\tNAMES" | cat - <(docker ps | tail -n +2) | prettytable 7 purple
+    echo -e "CONTAINER ID\tIMAGE\tCOMMAND\tCREATED\tSTATUS\tPORTS\tNAMES" \
+    | cat - <(docker ps | tail -n +2) \
+    | prettytable 7 purple
 }
 
 get_container_info() {
-    docker inspect "$1" | jq -r '.[] | {Id, Name, Image, State: .State.Status, IP: .NetworkSettings.IPAddress, Ports: .NetworkSettings.Ports}' | prettytable 6 yellow
+    docker inspect "$1" \
+    | jq -r '.[] | {Id, Name, Image, State: .State.Status, IP: .NetworkSettings.IPAddress, Ports: .NetworkSettings.Ports}' \
+    | prettytable 6 yellow
 }
 
 display_nginx_domains() {
-    echo -e "Server Name" | cat - <(sudo nginx -T | grep "server_name" | awk '{print $2}' | sort | uniq) | prettytable 1 light_blue
+    echo -e "Server Name" \
+    | cat - <(sudo nginx -T | grep "server_name" | awk '{print $2}' | sort | uniq) \
+    | prettytable 1 light_blue
 }
 
 display_nginx_domain_info() {
     echo "Configuration for domain: $1"
-    grep -A 10 -B 10 "server_name $1" /etc/nginx/sites-available/* | prettytable 1 light_green
+    grep -A 10 -B 10 "server_name $1" /etc/nginx/sites-available/* \
+    | prettytable 1 light_green
 }
 
 list_users() {
-    echo -e "Username" | cat - <(awk -F':' '{ print $1}' /etc/passwd) | prettytable 1 light_cyan
+    echo -e "Username" \
+    | cat - <(awk -F':' '{ print $1}' /etc/passwd) \
+    | prettytable 1 light_cyan
 }
 
 display_user_last_log_in_time() {
-    lastlog | prettytable 4 light_purple
+    lastlog \
+    | prettytable 4 light_purple
 }
 
 fetch_user_info() {
-    echo -e "Username\tUID\tGID\tHome\tShell" | cat - <(grep "^$1:" /etc/passwd | awk -F: '{print $1"\t"$3"\t"$4"\t"$6"\t"$7}') | prettytable 5 light_red
+    echo -e "Username\tUID\tGID\tHome\tShell" \
+    | cat - <(grep "^$1:" /etc/passwd | awk -F: '{print $1"\t"$3"\t"$4"\t"$6"\t"$7}') \
+    | prettytable 5 light_red
 }
 
 display_time_range_info_for_a_particular_date() {
@@ -127,9 +143,10 @@ display_time_range_info_for_a_particular_date() {
         end_date="$start_date"
     fi
 
-    journalctl --since "$start_date 00:00:00" --until "$end_date 23:59:59" 
+    journalctl --since "$start_date 00:00:00" --until "$end_date 23:59:59" \
+    | awk -F ' ' '{print $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15}' \
+    | column -t
 }
-
 
 display_help_options() {
     echo "Usage: $0 [options]
@@ -220,10 +237,10 @@ main() {
                 echo "Invalid option: $1"
                 display_help_options
                 exit 1
-                ;;                      
-        esac 
-        shift    
-    done                    
+                ;;
+        esac
+        shift
+    done
 }
 
 main "$@"
