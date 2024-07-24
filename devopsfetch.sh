@@ -127,7 +127,7 @@ display_time_range_info_for_a_particular_date() {
         end_date="$start_date"
     fi
 
-    journalctl --since "$start_date 00:00:00" --until "$end_date 23:59:59" | prettytable 3 yellow
+    journalctl --since "$start_date 00:00:00" --until "$end_date 23:59:59" 
 }
 
 
