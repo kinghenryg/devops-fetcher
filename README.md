@@ -23,8 +23,11 @@ Clone the repository and mark the scripts as executable
  run **./devopsfetch.sh -options** 
  where options can be any of the following
 - **-p or --port**  displays all active ports 
-- **-d or --docker** image and container list or **-d or --docker <container_name>** for container information
+- **-d or --docker** displays image and container list or **-d or --docker <container_name>** for container information
 - **-n or --nginx** displays all Nginx domains and their ports **--nginx <domain_name>** to give specific configuration information
--- **u 0r --users** to display users and their last logged in time 
---
+- **-u 0r --users** to display users and their last logged in time 
+- **-u -<username>** to provide specific user info
+- **-t or --time <date_and_time>** to show all user logs within a specific time frame
+- **-h or --help** to see usage guide and options
+
 
